@@ -8,13 +8,14 @@ class Question {
 
 let timeRemaining = 60;
 
+let timerInterval;
+
 function startTimer() {
-  const timerInterval = setInterval(() => {
+   timerInterval = setInterval(() => {
     timeRemaining--;
     updateTimer();
     if (timeRemaining <= 0) {
-      clearInterval(timerInterval);
-      alert("Time's up!");
+        endQuiz();
     }
   }, 1000);
 }
@@ -24,7 +25,27 @@ function updateTimer() {
   timerElement.innerText = `Time remaining: ${timeRemaining} seconds`;
 }
 
-startTimer();
+function startQuiz() {
+    quiz.reset();
+  timeRemaining = 60;
+  updateTimer();
+  score = 0;
+  updateScore();
+    document.getElementById("start-button").style.display = "none";
+    document.getElementById("high-scores-button").style.display = "none"
+    document.getElementById("quiz").style.display = "block";
+    document.getElementById("high-scores").style.display = "none";
+    startTimer();
+    showCurrentQuestion();
+  }
+
+  function showHighScores() {
+    document.getElementById("start-button").style.display = "block";
+    document.getElementById("high-scores-button").style.display = "none";
+    document.getElementById("quiz").style.display = "none";
+    document.getElementById("high-scores").style.display = "block";
+    updateHighScores();
+  }
 
 const question1 = new Question (
     'How many licks to the center of a tootsie pop _____',
@@ -73,6 +94,10 @@ class Quiz {
     hasEnded() {
       return this.currentIndex >= this.questions.length;
     }
+    reset() {
+        this.currentIndex = 0;
+    }
+
   }
 
   let quiz = new Quiz([question1, question2, question3, question4, question5])
@@ -93,9 +118,9 @@ class Quiz {
 
   function checkAnswer(selectedChoice) {
     if (selectedChoice === quiz.getCurrentQuestion().answer) {
-      score += 12.5;
+      score += 20;
     } else {
-      score -= 12.5;
+      score -= 20;
       timeRemaining -= 15;
     }
     updateTimer();
@@ -111,10 +136,31 @@ class Quiz {
   function showNextQuestion() {
     quiz.nextQuestion();
     if (quiz.hasEnded()) {
-      alert("Quiz has ended!");
-      return;
+            endQuiz();
     }
     showCurrentQuestion();
   }
 
-  showCurrentQuestion();
+  function endQuiz() {
+    clearInterval(timerInterval);
+    const initials = prompt("Enter your initials:");
+    if (initials) {
+      const highScores = JSON.parse(localStorage.getItem("highScores")) || [];
+      highScores.push({ initials, score });
+      localStorage.setItem("highScores", JSON.stringify(highScores));
+    }
+    alert("Quiz ended!");
+    document.getElementById("high-scores-button").style.display = "block";
+  }
+
+  function updateHighScores() {
+    const highScores = JSON.parse(localStorage.getItem("highScores")) || [];
+    highScores.sort((a, b) => b.score - a.score);
+    const highScoresElement = document.getElementById("high-scores");
+    highScoresElement.innerHTML = "";
+    for (const { initials, score } of highScores) {
+      const li = document.createElement("li");
+      li.innerText = `${initials}: ${score}`;
+      highScoresElement.appendChild(li);
+    }
+  }
