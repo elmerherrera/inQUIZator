@@ -6,6 +6,26 @@ class Question {
     }
 }
 
+let timeRemaining = 60;
+
+function startTimer() {
+  const timerInterval = setInterval(() => {
+    timeRemaining--;
+    updateTimer();
+    if (timeRemaining <= 0) {
+      clearInterval(timerInterval);
+      alert("Time's up!");
+    }
+  }, 1000);
+}
+
+function updateTimer() {
+  const timerElement = document.getElementById("timer");
+  timerElement.innerText = `Time remaining: ${timeRemaining} seconds`;
+}
+
+startTimer();
+
 const question1 = new Question (
     'How many licks to the center of a tootsie pop _____',
     ['1','2','3','lets find out'],
@@ -76,7 +96,9 @@ class Quiz {
       score += 12.5;
     } else {
       score -= 12.5;
+      timeRemaining -= 15;
     }
+    updateTimer();
     showNextQuestion();
     updateScore();
   }
